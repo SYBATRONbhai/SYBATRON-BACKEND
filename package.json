@@ -1,0 +1,16 @@
+{
+  "name": "sybatron",
+  "version": "1.0.0",
+  "description": "First try at a professional backend project",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sybatron",
+    "javascipt",
+    "backend"
+  ],
+  "author": "Barnamoy Dhar",
+  "license": "ISC"
+}
