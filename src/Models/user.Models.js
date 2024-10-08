@@ -100,5 +100,5 @@ userSchema.methods.generateRefreshToken = async function () {
     }
   ); // 10 days token
 };
-
-export const Muser = mongoose.model("Muser", userSchema);
+const Muser = mongoose.model("Muser", userSchema);
+export { Muser };
