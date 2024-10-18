@@ -1,7 +1,8 @@
 import AsyncHandler from "../Utils/AsyncHandler.js";
 import ApiError from "../Utils/ApiError.js";
-import { Msuer, Muser } from "../Models/user.Models.js";
-import uploadOnCloudinary from "../Utils/Cloudinary.js";
+import {Muser} from "../Models/user.Models.js";
+import {uploadOnCloudinary} from "../Utils/Cloudinary.js";
+import ApiResponse from "../Utils/ApiResponse.js";
 const registerUser = AsyncHandler(async (req, res) => {
   //get user details.
   //validation- not empty
@@ -13,24 +14,29 @@ const registerUser = AsyncHandler(async (req, res) => {
   //check for user creation
   //return res
 
-  const { fullName, email, username, password } = req.body;
+  const { fullname, email, username, password } = req.body;
+ /* console.log("fullname :", fullname);
   console.log("email :", email);
-
+  console.log("username :", username);
+  console.log("password :", password);
+*/
   if (
-    [fullName, email, username, password].some((field) => field?.trim() === "")
+    [fullname, email, username, password].some((field) => field?.trim() === "")
   ) {
-    throw new ApiError(400, "This Field is required!!");
+    throw new ApiError(400, "1 or more fields are empty!!");
   }
 
-  const ExistedUser = Msuer.findOne({
+  const ExistedUser = await Muser.findOne({
     $or: [{ username }, { email }],
   });
+
+  //console.log(req.files);
 
   if (ExistedUser) {
     throw new ApiError(409, "Username or email already exists!!");
   }
   const AvatarLocalpath = req.files?.avatar[0]?.path;
-  const CoverImageLocalpath = req.files?.coverImage[0]?.path;
+  const CoverImageLocalpath = req.files?.coverimage[0]?.path;
 
   if (!AvatarLocalpath) {
     throw new ApiError(400, "Please upload an avatar image");
@@ -38,36 +44,33 @@ const registerUser = AsyncHandler(async (req, res) => {
   if (!CoverImageLocalpath) {
     throw new ApiError(400, "Please upload a cover image");
   }
-
   const Avatar = await uploadOnCloudinary(AvatarLocalpath);
-  const CoverImage = await uploadOnCloudinary(CoverImageLocalpath);
-  if (!Avatar) {
+  const coverImage = await uploadOnCloudinary(CoverImageLocalpath);
+   if (!Avatar) {
     throw new ApiError(500, "Failed to upload avatar image");
   }
 
-  if (!CoverImage) {
+  if (!coverImage) {
     throw new ApiError(500, "Failed to upload cover image");
   }
 
-  const user = await Msuer.create({
-    fullName,
+  const Newuser = await Muser.create({
+    fullname,
     email,
-    username: username.toLowercase(),
+    username,
     password,
     avatar: Avatar.url,
-    coverImage: CoverImage.url,
+    coverimage: coverImage.url,
   });
 
-  const createdUser = Muser.findById(user._id).select(
+  const createdUser = await Muser.findById(Newuser._id).select(
     "-password -refreshToken"
   );
   if (!createdUser) {
     throw new ApiError(500, "Failed to create user");
   }
 
-  return res
-    .status(201)
-    .json(new ApiResponse(200, createdUser, "User created successfully!!!"));
+  return res.status(201).json(new ApiResponse(200, createdUser, "User created successfully!!!"));
 });
 
-export default registerUser;
+export default registerUser ;

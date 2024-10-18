@@ -31,6 +31,7 @@ const userSchema = new Schema(
     },
     coverimage: {
       type: String,
+      required: true,
     },
     watchHistory: [
       {
@@ -38,14 +39,6 @@ const userSchema = new Schema(
         ref: "Video",
       },
     ],
-    /* likedVideos: [{
-    type: Schema.Types.ObjectId,
-    ref: "Video",
-  }],
-    dislikedVideos: [{
-    type: Schema.Types.ObjectId,
-    ref: "Video",
-  }],*/
     password: {
       type: String,
       required: [true, "Password is required!!"],
@@ -100,5 +93,7 @@ userSchema.methods.generateRefreshToken = async function () {
     }
   ); // 10 days token
 };
-const Muser = mongoose.model("Muser", userSchema);
-export { Muser };
+export const Muser = mongoose.model("Muser", userSchema);
+
+
+ 
