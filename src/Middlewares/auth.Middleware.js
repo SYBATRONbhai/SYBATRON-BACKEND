@@ -1,26 +1,30 @@
-import AsyncHandler from "../Utils/AsyncHandler.js";
-import ApiError from "../Utils/ApiError.js";
-import JWT from "jsonwebtoken";
-import { Muser } from "../Models/user.Models.js";
+import { ApiError } from "../utils/ApiError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import jwt from "jsonwebtoken"
+import { User } from "../models/user.model.js";
 
-export const verifyJWT = AsyncHandler(async (req,res,next) => {
-  try {
-    const GetToken = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","");
+export const verifyJWT = asyncHandler(async(req, _, next) => {
+    try {
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        
+        // console.log(token);
+        if (!token) {
+            throw new ApiError(401, "Unauthorized request")
+        }
     
-    if (!GetToken) {
-      throw new ApiError(401,"Not authenticated");
-  }
-  
-   const DecodedToken = JWT.verify(GetToken, process.env.ACCESS_TOKEN_SECRET)
-   const user = await Muser.findById(DecodedToken?._id).select("-password -refreshToken");
-   if (!user) {
-      throw new ApiError(401,"InValid Access Token");
-  }
-  req.user = user;
-  
-  next();
-  } catch (error) {
-    throw new ApiError(401, error?.message || "INVALID ACCESS TOKEN")
-  }
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
+    
+        if (!user) {
+            
+            throw new ApiError(401, "Invalid Access Token")
+        }
+    
+        req.user = user;
+        next()
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid access token")
+    }
+    
 })
-
